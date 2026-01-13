@@ -38,7 +38,7 @@ const Profile = async () => {
               {user.firstName} {user.lastName}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {user.emailAddresses[0].emailAddress}
+              {user.emailAddresses[0]?.emailAddress || 'No email'}
             </p>
           </div>
         </div>
