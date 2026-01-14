@@ -24,7 +24,7 @@ import {
 import {subjects} from "@/constants";
 import {Textarea} from "@/components/ui/textarea";
 import {createCompanion} from "@/lib/actions/companion.actions";
-import {redirect} from "next/navigation";
+import {useRouter} from "next/navigation";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: 'Companion is required.'}),
@@ -36,6 +36,7 @@ const formSchema = z.object({
 })
 
 const CompanionForm = () => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -52,10 +53,10 @@ const CompanionForm = () => {
         const companion = await createCompanion(values);
 
         if(companion) {
-            redirect(`/companions/${companion.id}`);
+            router.push(`/companions/${companion.id}`);
         } else {
             console.log('Failed to create a companion');
-            redirect('/');
+            router.push('/');
         }
     }
 
