@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "7.0.0-snapshot.v20260113135251",
+    "@clerk/nextjs": "^6.36.7",
     "@hookform/resolvers": "^5.2.2",
     "@jsmastery/utils": "^1.0.2",
     "@opentelemetry/core": "^2.1.0",
