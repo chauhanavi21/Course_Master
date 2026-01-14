@@ -1,9 +1,10 @@
 import {getCompanion} from "@/lib/actions/companion.actions";
-import {currentUser} from "@clerk/nextjs/server";
+import {currentUser, auth} from "@clerk/nextjs/server";
 import {redirect} from "next/navigation";
 import {getSubjectColor} from "@/lib/utils";
 import Image from "next/image";
 import CompanionComponent from "@/components/CompanionComponent";
+import DeleteCompanionButton from "@/components/DeleteCompanionButton";
 
 interface CompanionSessionPageProps {
     params: Promise<{ id: string}>;
@@ -13,11 +14,13 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
     const { id } = await params;
     const companion = await getCompanion(id);
     const user = await currentUser();
+    const { userId } = await auth();
 
     if(!user) redirect('/sign-in');
     if(!companion) redirect('/companions');
 
-    const { name, subject, title, topic, duration } = companion;
+    const { name, subject, title, topic, duration, author } = companion;
+    const isAuthor = userId === author;
 
     if(!name) redirect('/companions');
 
@@ -41,8 +44,13 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
                         <p className="text-lg">{topic}</p>
                     </div>
                 </div>
-                <div className="items-start text-2xl max-md:hidden">
-                    {duration} minutes
+                <div className="flex items-center gap-4">
+                    <div className="items-start text-2xl max-md:hidden">
+                        {duration} minutes
+                    </div>
+                    {isAuthor && (
+                        <DeleteCompanionButton companionId={id} />
+                    )}
                 </div>
             </article>
 

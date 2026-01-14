@@ -187,3 +187,40 @@ export const getBookmarkedCompanions = async (userId: string) => {
   // We don't need the bookmarks data, so we return only the companions
   return data.map(({ companions }) => companions);
 };
+
+// Delete companion - only the author can delete
+export const deleteCompanion = async (companionId: string, path: string) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const supabase = createSupabaseClient();
+  
+  // First, verify the user is the author
+  const { data: companion, error: fetchError } = await supabase
+    .from('companions')
+    .select('author')
+    .eq('id', companionId)
+    .single();
+
+  if (fetchError || !companion) {
+    throw new Error('Companion not found');
+  }
+
+  if (companion.author !== userId) {
+    throw new Error('You can only delete your own companions');
+  }
+
+  // Delete the companion
+  const { error } = await supabase
+    .from('companions')
+    .delete()
+    .eq('id', companionId)
+    .eq('author', userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(path);
+  return { success: true };
+};
