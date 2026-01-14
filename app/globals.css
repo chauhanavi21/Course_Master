@@ -139,6 +139,36 @@ body {
 }
 
 @layer components {
+  .hero-section {
+    @apply w-full py-16 px-4 max-sm:py-12;
+  }
+  .hero-content {
+    @apply max-w-3xl mx-auto text-center flex flex-col gap-6 items-center;
+  }
+  .hero-title {
+    @apply text-5xl font-bold leading-tight max-md:text-4xl max-sm:text-3xl;
+  }
+  .hero-description {
+    @apply text-xl text-muted-foreground max-w-2xl max-md:text-lg max-sm:text-base;
+  }
+  .hero-cta {
+    @apply inline-flex items-center gap-2 bg-primary text-white rounded-4xl px-8 py-4 text-lg font-semibold hover:opacity-90 transition-opacity cursor-pointer mt-4 max-sm:px-6 max-sm:py-3 max-sm:text-base;
+  }
+  .section-wrapper {
+    @apply w-full flex flex-col gap-6;
+  }
+  .section-header {
+    @apply flex items-center justify-between w-full max-sm:flex-col max-sm:items-start max-sm:gap-4;
+  }
+  .section-title {
+    @apply text-4xl font-bold max-md:text-3xl max-sm:text-2xl;
+  }
+  .section-link {
+    @apply inline-flex items-center gap-2 text-base font-semibold text-primary hover:opacity-80 transition-opacity;
+  }
+  .empty-state {
+    @apply w-full text-center py-12 px-4 text-muted-foreground;
+  }
   .home-section {
     @apply flex gap-4 justify-between items-start w-full max-lg:flex-col-reverse max-lg:items-center;
   }
@@ -146,7 +176,7 @@ body {
     @apply flex flex-wrap gap-4 w-full max-md:justify-center;
   }
   .companion-card {
-    @apply flex flex-col rounded-4xl border border-black px-4 py-4 gap-5 w-full min-lg:max-w-[410px] justify-between;
+    @apply flex flex-col rounded-4xl border border-black px-4 py-4 gap-5 w-full min-lg:w-[calc(33.333%-0.875rem)] min-lg:max-w-[410px] justify-between;
   }
   .subject-badge {
     @apply bg-black text-white rounded-4xl text-sm px-2 py-1 capitalize;
