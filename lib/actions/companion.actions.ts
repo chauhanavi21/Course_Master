@@ -19,9 +19,10 @@ export const createCompanion = async (formData: CreateCompanion) => {
 }
 
 export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {
+    const { userId } = await auth();
     const supabase = createSupabaseClient();
 
-    let query = supabase.from('companions').select();
+    let query = supabase.from('companions').select('*');
 
     if(subject && topic) {
         query = query.ilike('subject', `%${subject}%`)
@@ -38,7 +39,26 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 
     if(error) throw new Error(error.message);
 
-    return companions;
+    // If user is logged in, check which companions are bookmarked
+    if (userId && companions) {
+        const { data: bookmarks } = await supabase
+            .from('bookmarks')
+            .select('companion_id')
+            .eq('user_id', userId);
+
+        const bookmarkedIds = new Set(bookmarks?.map(b => b.companion_id) || []);
+
+        return companions.map(companion => ({
+            ...companion,
+            bookmarked: bookmarkedIds.has(companion.id)
+        }));
+    }
+
+    // If no user, return companions with bookmarked: false
+    return companions?.map(companion => ({
+        ...companion,
+        bookmarked: false
+    })) || [];
 }
 
 export const getCompanion = async (id: string) => {
