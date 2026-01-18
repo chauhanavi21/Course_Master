@@ -1,8 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CourseMaster - AI Learning Companion Platform
+
+This is a [Next.js](https://nextjs.org) project that enables users to build personalized AI companions and learn any subject through natural, engaging voice conversations.
+
+## Features
+
+- **Create AI Companions**: Build personalized learning companions with custom names, subjects, topics, voices, and personalities
+- **Voice Conversations**: Learn through natural voice interactions with AI companions
+- **Companion Library**: Browse and discover companions created by the community
+- **Delete Companions**: Authors can delete their own companions using the delete button on companion cards
+- **Session History**: Track your recent learning sessions
+- **Subject Filtering**: Filter companions by subject (Science, Math, Language, History, Coding, Economics, etc.)
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -16,9 +37,39 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/` - Next.js app router pages and layouts
+  - `companions/` - Companion library and creation pages
+  - `companions/[id]/` - Individual companion session pages
+- `components/` - React components
+  - `CompanionCard.tsx` - Card component for displaying companions with delete functionality
+  - `CompanionComponent.tsx` - Main voice conversation component
+  - `CompanionForm.tsx` - Form for creating new companions
+- `lib/actions/` - Server actions
+  - `companion.actions.ts` - Companion CRUD operations and data fetching
+- `lib/supabase.ts` - Supabase client configuration
+- `types/` - TypeScript type definitions
+
+## Key Features
+
+### Companion Cards
+- Display companion information (name, topic, subject, duration)
+- Delete button visible only to the companion's author
+- Color-coded by subject
+
+### Database
+- Uses Supabase for data storage
+- Companions are stored with author information for ownership tracking
+- Session history tracking for user progress
+
+## Technologies Used
+
+- [Next.js](https://nextjs.org) - React framework
+- [TypeScript](https://www.typescriptlang.org) - Type safety
+- [Supabase](https://supabase.com) - Database and backend
+- [Clerk](https://clerk.com) - Authentication
+- [VAPI](https://vapi.ai) - Voice AI integration
 
 ## Learn More
 
@@ -26,8 +77,6 @@ To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 

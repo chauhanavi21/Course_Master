@@ -39,8 +39,11 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 
     if(error) throw new Error(error.message);
 
+    // Ensure all companions include author field and bookmarked status
+    if (!companions) return [];
+
     // If user is logged in, check which companions are bookmarked
-    if (userId && companions) {
+    if (userId) {
         const { data: bookmarks } = await supabase
             .from('bookmarks')
             .select('companion_id')
@@ -50,15 +53,17 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 
         return companions.map(companion => ({
             ...companion,
+            author: companion.author || null, // Ensure author field is always present
             bookmarked: bookmarkedIds.has(companion.id)
         }));
     }
 
-    // If no user, return companions with bookmarked: false
-    return companions?.map(companion => ({
+    // If no user, return companions with bookmarked: false but keep author field
+    return companions.map(companion => ({
         ...companion,
+        author: companion.author || null, // Ensure author field is always present
         bookmarked: false
-    })) || [];
+    }));
 }
 
 export const getCompanion = async (id: string) => {
@@ -208,17 +213,17 @@ export const getBookmarkedCompanions = async (userId: string) => {
   return data.map(({ companions }) => companions);
 };
 
-// Delete companion - only the author can delete
+// Delete companion - anyone can delete (removed author restriction)
 export const deleteCompanion = async (companionId: string, path: string) => {
   const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
+  if (!userId) throw new Error('Unauthorized - Please log in to delete companions');
 
   const supabase = createSupabaseClient();
   
-  // First, verify the user is the author
+  // Verify companion exists
   const { data: companion, error: fetchError } = await supabase
     .from('companions')
-    .select('author')
+    .select('id, author')
     .eq('id', companionId)
     .single();
 
@@ -226,16 +231,11 @@ export const deleteCompanion = async (companionId: string, path: string) => {
     throw new Error('Companion not found');
   }
 
-  if (companion.author !== userId) {
-    throw new Error('You can only delete your own companions');
-  }
-
-  // Delete the companion
+  // Delete the companion (anyone can delete)
   const { error } = await supabase
     .from('companions')
     .delete()
-    .eq('id', companionId)
-    .eq('author', userId);
+    .eq('id', companionId);
 
   if (error) {
     throw new Error(error.message);

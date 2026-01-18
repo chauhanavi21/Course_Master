@@ -27,11 +27,17 @@ const CompanionCard = ({
 }: CompanionCardProps) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isDeleting, setIsDeleting] = useState(false);
   const isAuthor = user?.id === author;
+  const isLoggedIn = isLoaded && !!user;
 
   const handleDelete = async () => {
+    if (!isLoggedIn) {
+      alert('Please log in to delete companions');
+      return;
+    }
+
     if (!confirm("Are you sure you want to delete this companion?")) {
       return;
     }
@@ -50,13 +56,20 @@ const CompanionCard = ({
   return (
     <article className="companion-card" style={{ backgroundColor: color }}>
       <div className="flex justify-between items-center">
-        <div className="subject-badge">{subject}</div>
-        {isAuthor && (
+        <div className="flex items-center gap-2">
+          <div className="subject-badge">{subject}</div>
+          {isAuthor && isLoggedIn && (
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold" title="You created this companion">
+              Your Companion
+            </span>
+          )}
+        </div>
+        {isLoggedIn && (
           <button
             className="companion-bookmark"
             onClick={handleDelete}
             disabled={isDeleting}
-            title="Delete companion"
+            title={isAuthor ? "Delete your companion" : "Delete companion"}
           >
             <svg width="12.5" height="15" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 3.5H13M4.5 3.5V2.5C4.5 2.22386 4.72386 2 5 2H9C9.27614 2 9.5 2.22386 9.5 2.5V3.5M5.5 7.5V11.5M8.5 7.5V11.5M2.5 3.5L3 13.5C3 14.0523 3.44772 14.5 4 14.5H10C10.5523 14.5 11 14.0523 11 13.5L11.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
