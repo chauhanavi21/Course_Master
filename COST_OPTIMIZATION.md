@@ -1,7 +1,7 @@
 # API Cost Optimization Guide
 
 ## Overview
-This document outlines the cost optimizations implemented to reduce API usage and expenses.
+This document outlines API usage and configuration. **Note: Optimizations have been reverted for better accuracy and speed.**
 
 ## APIs Used (All Paid Services)
 1. **VAPI** - Voice AI platform (billed per minute of usage)
@@ -9,35 +9,28 @@ This document outlines the cost optimizations implemented to reduce API usage an
 3. **Deepgram** - Speech-to-text transcription (billed per minute)
 4. **11Labs** - Text-to-speech synthesis (billed per character)
 
-## Cost Optimizations Implemented
+## Current Configuration (Optimized for Accuracy)
 
-### 1. ✅ Model Change: GPT-4 → GPT-3.5-turbo
-**Savings: 10-30x reduction in costs**
-- **Before**: GPT-4 at ~$0.03 per 1K input tokens
-- **After**: GPT-3.5-turbo at ~$0.0015 per 1K tokens
-- **Impact**: Massive cost reduction while maintaining quality for educational conversations
+### 1. ✅ Model: GPT-4
+- **Model**: GPT-4 for highest accuracy and understanding
+- **Impact**: Best quality for educational conversations and language switching
+- **Cost**: ~$0.03 per 1K input tokens
 
-### 2. ✅ Response Length Limits
-- Added `maxTokens: 150` to limit response length
-- Updated system prompt to emphasize SHORT responses (2-3 sentences)
-- **Savings**: Reduces token usage by ~50-70%
+### 2. ✅ No Response Length Limits
+- Removed token limits for natural, complete responses
+- Allows for better explanations and language switching
 
-### 3. ✅ Session Duration Limits
-- Automatic session timeout based on companion's `duration` field
-- Prevents unlimited sessions that could rack up costs
-- Users see countdown timer
-- **Savings**: Prevents runaway sessions
+### 3. ✅ Full Voice Quality Settings
+- `stability: 0.4` - Natural voice variation
+- `similarityBoost: 0.8` - High voice quality
+- `style: 0.5` - Natural style variation
+- `useSpeakerBoost: true` - Enhanced audio quality
 
-### 4. ✅ Voice Settings Optimization
-- Reduced `similarityBoost` from 0.8 to 0.75
-- Reduced `style` from 0.5 to 0.4
-- Disabled `useSpeakerBoost` (costs extra)
-- **Savings**: ~10-15% reduction in 11Labs costs
-
-### 5. ✅ Temperature Optimization
-- Set to 0.7 for more consistent responses
-- Reduces need for regeneration
-- **Savings**: Lower token usage
+### 4. ✅ Dynamic Language Switching
+- AI understands and responds to language change requests
+- Example: "First say in French, then teach in English"
+- Seamless language transitions during conversation
+- Supports: English, French, Spanish, German, Hindi, Korean, Chinese
 
 ## Cost Monitoring Recommendations
 

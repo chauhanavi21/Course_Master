@@ -41,14 +41,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             setCallStatus(CallStatus.ACTIVE);
             setSessionStartTime(Date.now());
             setTimeRemaining(duration * 60);
-            
-            // Auto-disconnect after duration to prevent excessive API usage
-            timeoutRef.current = setTimeout(() => {
-                if (vapi.isActive()) {
-                    alert(`Session time limit reached (${duration} minutes). Ending session to manage costs.`);
-                    handleDisconnect();
-                }
-            }, duration * 60 * 1000); // Convert to milliseconds
+            // Removed auto-disconnect timeout for better user experience and accuracy
         };
 
         const onCallEnd = () => {

@@ -8,8 +8,8 @@ export const createCompanion = async (formData: CreateCompanion) => {
     const { userId: author } = await auth();
     const supabase = createSupabaseClient();
 
-    // Prepare data for insertion
-    // Include language if column exists, otherwise it will be ignored
+    // Prepare data for insertion - exclude language initially
+    // Language column may not exist in database yet
     const insertData = {
         name: formData.name,
         subject: formData.subject,
@@ -17,42 +17,56 @@ export const createCompanion = async (formData: CreateCompanion) => {
         voice: formData.voice,
         style: formData.style,
         duration: formData.duration,
-        language: formData.language || 'english', // Include language (will be ignored if column doesn't exist)
         author,
     };
 
-    const { data, error } = await supabase
-        .from('companions')
-        .insert(insertData)
-        .select();
-
-    if(error) {
+    // Try to insert with language first (if column exists)
+    let data, error;
+    try {
+        const result = await supabase
+            .from('companions')
+            .insert({ ...insertData, language: formData.language || 'english' })
+            .select();
+        
+        data = result.data;
+        error = result.error;
+        
         // If error is due to language column not existing, retry without it
-        if (error.message?.includes('language') || error.code === '42703') {
-            const { language, ...dataWithoutLanguage } = insertData;
-            const { data: retryData, error: retryError } = await supabase
+        if (error && (
+            error.message?.toLowerCase().includes('language') || 
+            error.message?.toLowerCase().includes('schema cache') ||
+            error.message?.toLowerCase().includes('could not find') ||
+            error.code === '42703' ||
+            error.code === 'PGRST116'
+        )) {
+            console.log('Language column not found, inserting without language field');
+            const retryResult = await supabase
                 .from('companions')
-                .insert(dataWithoutLanguage)
+                .insert(insertData)
                 .select();
             
-            if(retryError || !retryData) {
-                console.error('Create companion error:', retryError);
-                throw new Error(retryError?.message || 'Failed to create a companion');
-            }
-            
-            // Return with language for frontend use even if not stored in DB
-            return { ...retryData[0], language: formData.language || 'english' };
+            data = retryResult.data;
+            error = retryResult.error;
         }
+    } catch (err) {
+        // Fallback: try without language if any error occurs
+        console.log('Error during insert, retrying without language field');
+        const retryResult = await supabase
+            .from('companions')
+            .insert(insertData)
+            .select();
         
+        data = retryResult.data;
+        error = retryResult.error;
+    }
+
+    if(error || !data) {
         console.error('Create companion error:', error);
         throw new Error(error?.message || 'Failed to create a companion');
     }
 
-    if(!data) {
-        throw new Error('Failed to create a companion - no data returned');
-    }
-
-    return data[0];
+    // Return companion with language included for frontend use (even if not stored in DB)
+    return { ...data[0], language: formData.language || 'english' };
 }
 
 export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {

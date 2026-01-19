@@ -35,25 +35,21 @@ export const configureAssistant = (voice: string, style: string, language: strin
         "Hello, let's start the session. Today we'll be talking about {{topic}}.",
     transcriber: {
       provider: "deepgram",
-      model: "nova-3",
+      model: "nova-2", // Faster model for better real-time performance (nova-2 is faster than nova-3)
       language: languageCode,
     },
     voice: {
       provider: "11labs",
       voiceId: voiceId,
-      stability: 0.5, // Optimized for cost - higher stability = less regeneration needed
-      similarityBoost: 0.75, // Slightly reduced to save on processing
+      stability: 0.4,
+      similarityBoost: 0.8,
       speed: 1,
-      style: 0.4, // Reduced style variation to save costs
-      useSpeakerBoost: false, // Disabled to reduce API costs
+      style: 0.5,
+      useSpeakerBoost: true,
     },
     model: {
       provider: "openai",
-      // Using GPT-3.5-turbo for cost efficiency (10-30x cheaper than GPT-4)
-      // GPT-4 costs ~$0.03 per 1K input tokens, GPT-3.5-turbo costs ~$0.0015 per 1K tokens
-      model: "gpt-3.5-turbo",
-      temperature: 0.7, // Lower temperature for more consistent, cost-effective responses
-      maxTokens: 150, // Limit response length to reduce costs
+      model: "gpt-4",
       messages: [
         {
           role: "system",
@@ -65,8 +61,24 @@ export const configureAssistant = (voice: string, style: string, language: strin
                     From time to time make sure that the student is following you and understands you.
                     Break down the topic into smaller parts and teach the student one part at a time.
                     Keep your style of conversation {{ style }}.
-                    Keep your responses SHORT (2-3 sentences max) - this is a voice conversation.
+                    Keep your responses concise and natural, like in a real voice conversation.
                     Do not include any special characters in your responses - this is a voice conversation.
+
+                    IMPORTANT - Dynamic Language Switching:
+                    The student may request you to switch languages during the conversation. For example:
+                    - "First say it in French, then explain in English"
+                    - "Help me in Hindi first, then English"
+                    - "Say this in Spanish, then teach in English"
+                    
+                    When the student requests language switching:
+                    1. IMMEDIATELY acknowledge and switch to the requested language(s)
+                    2. Follow the sequence they specify (e.g., "first French, then English" means: respond in French first, then continue in English)
+                    3. You can seamlessly switch between languages within the same response if requested
+                    4. Maintain the teaching quality regardless of language
+                    5. If they say "first in [language] then in [language]", respond accordingly in that sequence
+                    
+                    Supported languages: English, French, Spanish, German, Hindi, Korean, Chinese.
+                    Always prioritize understanding the student's language preference and adapt immediately.
               `,
         },
       ],
