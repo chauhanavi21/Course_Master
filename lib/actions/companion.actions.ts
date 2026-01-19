@@ -215,32 +215,63 @@ export const getBookmarkedCompanions = async (userId: string) => {
 
 // Delete companion - anyone can delete (removed author restriction)
 export const deleteCompanion = async (companionId: string, path: string) => {
-  const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized - Please log in to delete companions');
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      throw new Error('Unauthorized - Please log in to delete companions');
+    }
 
-  const supabase = createSupabaseClient();
-  
-  // Verify companion exists
-  const { data: companion, error: fetchError } = await supabase
-    .from('companions')
-    .select('id, author')
-    .eq('id', companionId)
-    .single();
+    const supabase = createSupabaseClient();
+    
+    // First, delete related records (bookmarks and session_history) to avoid foreign key constraints
+    // Delete bookmarks first
+    const { error: bookmarkError } = await supabase
+      .from('bookmarks')
+      .delete()
+      .eq('companion_id', companionId);
 
-  if (fetchError || !companion) {
-    throw new Error('Companion not found');
+    if (bookmarkError) {
+      console.error('Error deleting bookmarks:', bookmarkError);
+      // Continue anyway - bookmarks might not exist
+    }
+
+    // Delete session history
+    const { error: sessionError } = await supabase
+      .from('session_history')
+      .delete()
+      .eq('companion_id', companionId);
+
+    if (sessionError) {
+      console.error('Error deleting session history:', sessionError);
+      // Continue anyway - session history might not exist
+    }
+
+    // Verify companion exists
+    const { data: companion, error: fetchError } = await supabase
+      .from('companions')
+      .select('id')
+      .eq('id', companionId)
+      .single();
+
+    if (fetchError || !companion) {
+      throw new Error(`Companion not found: ${fetchError?.message || 'Unknown error'}`);
+    }
+
+    // Delete the companion (anyone can delete)
+    const { error: deleteError } = await supabase
+      .from('companions')
+      .delete()
+      .eq('id', companionId);
+
+    if (deleteError) {
+      console.error('Delete error details:', deleteError);
+      throw new Error(`Failed to delete companion: ${deleteError.message}`);
+    }
+
+    revalidatePath(path);
+    return { success: true };
+  } catch (error) {
+    console.error('deleteCompanion error:', error);
+    throw error instanceof Error ? error : new Error('Unknown error occurred while deleting companion');
   }
-
-  // Delete the companion (anyone can delete)
-  const { error } = await supabase
-    .from('companions')
-    .delete()
-    .eq('id', companionId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidatePath(path);
-  return { success: true };
 };

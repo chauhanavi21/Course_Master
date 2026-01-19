@@ -44,11 +44,16 @@ const CompanionCard = ({
 
     setIsDeleting(true);
     try {
-      await deleteCompanion(id, pathname);
+      // Use root path if pathname is not available
+      const pathToRevalidate = pathname || '/';
+      await deleteCompanion(id, pathToRevalidate);
       router.refresh();
     } catch (error) {
       console.error('Failed to delete companion:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete companion');
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to delete companion. Please check the console for details.';
+      alert(errorMessage);
       setIsDeleting(false);
     }
   };
