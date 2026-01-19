@@ -11,10 +11,23 @@ export const getSubjectColor = (subject: string) => {
   return subjectsColors[subject as keyof typeof subjectsColors];
 };
 
-export const configureAssistant = (voice: string, style: string) => {
+// Language code mapping for Deepgram transcriber
+const languageCodes: Record<string, string> = {
+  english: "en",
+  hindi: "hi",
+  french: "fr",
+  spanish: "es",
+  german: "de",
+  korean: "ko",
+  chinese: "zh",
+};
+
+export const configureAssistant = (voice: string, style: string, language: string = "english") => {
   const voiceId = voices[voice as keyof typeof voices][
           style as keyof (typeof voices)[keyof typeof voices]
           ] || "sarah";
+
+  const languageCode = languageCodes[language.toLowerCase()] || "en";
 
   const vapiAssistant: CreateAssistantDTO = {
     name: "Companion",
@@ -23,7 +36,7 @@ export const configureAssistant = (voice: string, style: string) => {
     transcriber: {
       provider: "deepgram",
       model: "nova-3",
-      language: "en",
+      language: languageCode,
     },
     voice: {
       provider: "11labs",

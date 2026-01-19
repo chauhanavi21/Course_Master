@@ -32,6 +32,7 @@ const formSchema = z.object({
     topic: z.string().min(1, { message: 'Topic is required.'}),
     voice: z.string().min(1, { message: 'Voice is required.'}),
     style: z.string().min(1, { message: 'Style is required.'}),
+    language: z.string().min(1, { message: 'Language is required.'}),
     duration: z.coerce.number().min(1, { message: 'Duration is required.'}),
 })
 
@@ -45,6 +46,7 @@ const CompanionForm = () => {
             topic: '',
             voice: '',
             style: '',
+            language: 'english',
             duration: 15,
         },
     })
@@ -184,6 +186,53 @@ const CompanionForm = () => {
                                         </SelectItem>
                                         <SelectItem value="casual">
                                             Casual
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="language"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Language</FormLabel>
+                            <FormControl>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    defaultValue={field.value}
+                                >
+                                    <SelectTrigger className="input">
+                                        <SelectValue
+                                            placeholder="Select the language"
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="english">
+                                            English
+                                        </SelectItem>
+                                        <SelectItem value="hindi">
+                                            Hindi
+                                        </SelectItem>
+                                        <SelectItem value="french">
+                                            French
+                                        </SelectItem>
+                                        <SelectItem value="spanish">
+                                            Spanish
+                                        </SelectItem>
+                                        <SelectItem value="german">
+                                            German
+                                        </SelectItem>
+                                        <SelectItem value="korean">
+                                            Korean
+                                        </SelectItem>
+                                        <SelectItem value="chinese">
+                                            Chinese
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>

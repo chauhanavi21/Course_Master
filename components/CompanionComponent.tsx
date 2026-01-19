@@ -15,7 +15,7 @@ enum CallStatus {
     FINISHED = 'FINISHED',
 }
 
-const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice }: CompanionComponentProps) => {
+const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, language = "english" }: CompanionComponentProps) => {
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -86,7 +86,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         }
 
         // @ts-expect-error
-        vapi.start(configureAssistant(voice, style), assistantOverrides)
+        vapi.start(configureAssistant(voice, style, language), assistantOverrides)
     }
 
     const handleDisconnect = () => {

@@ -60,7 +60,7 @@ const Page = async () => {
       </section>
 
       {/* Recent Sessions & CTA Section */}
-      <section className="home-section">
+      <section className={`home-section ${(recentSessionsCompanions && recentSessionsCompanions.length > 0) || companions.length > 0 ? '' : 'justify-center'}`}>
         {recentSessionsCompanions && recentSessionsCompanions.length > 0 && (
           <CompanionsList
             title="Recently Completed Sessions"
