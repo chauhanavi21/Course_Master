@@ -71,13 +71,13 @@ const CompanionCard = ({
         </div>
         {isLoggedIn && (
           <button
-            className="companion-bookmark"
+            className="companion-delete"
             onClick={handleDelete}
             disabled={isDeleting}
             title={isAuthor ? "Delete your companion" : "Delete companion"}
           >
-            <svg width="12.5" height="15" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 3.5H13M4.5 3.5V2.5C4.5 2.22386 4.72386 2 5 2H9C9.27614 2 9.5 2.22386 9.5 2.5V3.5M5.5 7.5V11.5M8.5 7.5V11.5M2.5 3.5L3 13.5C3 14.0523 3.44772 14.5 4 14.5H10C10.5523 14.5 11 14.0523 11 13.5L11.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 3.5H13M4.5 3.5V2.5C4.5 2.22386 4.72386 2 5 2H9C9.27614 2 9.5 2.22386 9.5 2.5V3.5M5.5 7.5V11.5M8.5 7.5V11.5M2.5 3.5L3 13.5C3 14.0523 3.44772 14.5 4 14.5H10C10.5523 14.5 11 14.0523 11 13.5L11.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         )}
