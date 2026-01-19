@@ -82,4 +82,5 @@ interface CompanionComponentProps {
   voice: string;
   style: string;
   language?: string;
+  duration?: number;
 }

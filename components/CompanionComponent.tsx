@@ -15,13 +15,16 @@ enum CallStatus {
     FINISHED = 'FINISHED',
 }
 
-const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, language = "english" }: CompanionComponentProps) => {
+const CompanionComponent = ({ companionId, subject, topic, name, userName, userImage, style, voice, language = "english", duration = 15 }: CompanionComponentProps) => {
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [messages, setMessages] = useState<SavedMessage[]>([]);
+    const [timeRemaining, setTimeRemaining] = useState<number>(duration * 60); // Convert minutes to seconds
+    const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
     const lottieRef = useRef<LottieRefCurrentProps>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         if(lottieRef) {
@@ -34,10 +37,27 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     }, [isSpeaking, lottieRef])
 
     useEffect(() => {
-        const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
+        const onCallStart = () => {
+            setCallStatus(CallStatus.ACTIVE);
+            setSessionStartTime(Date.now());
+            setTimeRemaining(duration * 60);
+            
+            // Auto-disconnect after duration to prevent excessive API usage
+            timeoutRef.current = setTimeout(() => {
+                if (vapi.isActive()) {
+                    alert(`Session time limit reached (${duration} minutes). Ending session to manage costs.`);
+                    handleDisconnect();
+                }
+            }, duration * 60 * 1000); // Convert to milliseconds
+        };
 
         const onCallEnd = () => {
             setCallStatus(CallStatus.FINISHED);
+            setSessionStartTime(null);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
             addToSessionHistory(companionId)
         }
 
@@ -67,8 +87,28 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             vapi.off('error', onError);
             vapi.off('speech-start', onSpeechStart);
             vapi.off('speech-end', onSpeechEnd);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
         }
-    }, []);
+    }, [duration, companionId]);
+
+    // Timer countdown effect
+    useEffect(() => {
+        if (callStatus === CallStatus.ACTIVE && sessionStartTime) {
+            const interval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+                const remaining = Math.max(0, duration * 60 - elapsed);
+                setTimeRemaining(remaining);
+                
+                if (remaining === 0) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [callStatus, sessionStartTime, duration]);
 
     const toggleMicrophone = () => {
         const isMuted = vapi.isMuted();
@@ -90,8 +130,19 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     }
 
     const handleDisconnect = () => {
-        setCallStatus(CallStatus.FINISHED)
-        vapi.stop()
+        setCallStatus(CallStatus.FINISHED);
+        setSessionStartTime(null);
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        vapi.stop();
+    }
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     return (
@@ -133,6 +184,11 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                             {isMuted ? 'Turn on microphone' : 'Turn off microphone'}
                         </p>
                     </button>
+                    {callStatus === CallStatus.ACTIVE && (
+                        <div className="text-center text-sm text-muted-foreground mb-2">
+                            Time remaining: {formatTime(timeRemaining)}
+                        </div>
+                    )}
                     <button className={cn('rounded-lg py-2 cursor-pointer transition-colors w-full text-white', callStatus ===CallStatus.ACTIVE ? 'bg-red-700' : 'bg-primary', callStatus === CallStatus.CONNECTING && 'animate-pulse')} onClick={callStatus === CallStatus.ACTIVE ? handleDisconnect : handleCall}>
                         {callStatus === CallStatus.ACTIVE
                         ? "End Session"

@@ -8,12 +8,49 @@ export const createCompanion = async (formData: CreateCompanion) => {
     const { userId: author } = await auth();
     const supabase = createSupabaseClient();
 
+    // Prepare data for insertion
+    // Include language if column exists, otherwise it will be ignored
+    const insertData = {
+        name: formData.name,
+        subject: formData.subject,
+        topic: formData.topic,
+        voice: formData.voice,
+        style: formData.style,
+        duration: formData.duration,
+        language: formData.language || 'english', // Include language (will be ignored if column doesn't exist)
+        author,
+    };
+
     const { data, error } = await supabase
         .from('companions')
-        .insert({...formData, author })
+        .insert(insertData)
         .select();
 
-    if(error || !data) throw new Error(error?.message || 'Failed to create a companion');
+    if(error) {
+        // If error is due to language column not existing, retry without it
+        if (error.message?.includes('language') || error.code === '42703') {
+            const { language, ...dataWithoutLanguage } = insertData;
+            const { data: retryData, error: retryError } = await supabase
+                .from('companions')
+                .insert(dataWithoutLanguage)
+                .select();
+            
+            if(retryError || !retryData) {
+                console.error('Create companion error:', retryError);
+                throw new Error(retryError?.message || 'Failed to create a companion');
+            }
+            
+            // Return with language for frontend use even if not stored in DB
+            return { ...retryData[0], language: formData.language || 'english' };
+        }
+        
+        console.error('Create companion error:', error);
+        throw new Error(error?.message || 'Failed to create a companion');
+    }
+
+    if(!data) {
+        throw new Error('Failed to create a companion - no data returned');
+    }
 
     return data[0];
 }
